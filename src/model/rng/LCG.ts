@@ -15,7 +15,7 @@ export class LCG {
     this.count++
     const floor = min ? min : 0
     const ceil = max ? max : 1
-    if (floor && ceil && floor >= ceil) throw `floor(${floor})  >= ceiling(${ceil})`
+    if (floor && ceil && floor >= ceil) throw new Error(`floor(${floor})  >= ceiling(${ceil})`)
 
     this.rand = (this.a * this.rand + this.c) % this.m 
 

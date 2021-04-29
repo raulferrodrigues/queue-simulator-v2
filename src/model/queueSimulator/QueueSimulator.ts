@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import { LCG } from '../rng/LCG'
 import { Action, Event, EventList } from './components/EventList'
+import { Log, Rules } from './components/Queue'
 
 export class QueueSimulator {
   // > rules
@@ -133,16 +134,4 @@ export class QueueSimulator {
       }
     }
   }
-}
-
-export type Rules = {
-  arrival: { floor: number, ceil: number }
-  service: { floor: number, ceil: number }
-}
-
-export type Log = {
-  action: Action
-  queueSize: number
-  simTime: number
-  state: number[]
 }

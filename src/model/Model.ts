@@ -3,10 +3,13 @@ import { QueueSimulator } from "./queueSimulator/QueueSimulator"
 
 export default class Model {
   constructor() {    
-    const rules = { 
+    const rules = {
+      source: 'out',
+      drain: 'out',
       arrival: { floor: 1, ceil: 10 }, 
       service: { floor: 2, ceil: 4 },
     }
+    
     const firstEvent: Event = { action: Action.Enqueue, time: 2, scheduledTime: 2 }
     const initialSize = 0
     const capacity = 3
