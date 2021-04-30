@@ -14,6 +14,7 @@ export class EventList {
 
   push(action: Action, currentTime: number, interval: number): void {
     this.list.push({
+      targetQueue: 'q1',
       action: action,
       time: interval,
       scheduledTime: currentTime + interval,
@@ -40,6 +41,7 @@ export enum Action {
 }
 
 export type Event = {
+  targetQueue: string
   action: Action
   time: number
   scheduledTime: number

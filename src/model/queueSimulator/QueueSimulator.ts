@@ -1,41 +1,25 @@
 import _ from 'lodash'
-import { LCG } from '../rng/LCG'
+import { time } from 'node:console'
 import { Action, Event, EventList } from './components/EventList'
-import { Log, Rules } from './components/Queue'
+import Queue, { Log } from './components/Queue'
+
+
 
 export class QueueSimulator {
   // > rules
-  private lcg: LCG
-  private rules: Rules
-  private capacity: number
-  private servers: number
+  private queues: Queue[]
   private simDuration: number
   // <
 
   // > state
   private currentTime: number
-  private size: number
-  private logs: Log[]
   private events: EventList
   // <
 
-  constructor(rules: Rules, initialSize: number, firstEvent: Event, capacity = Infinity, servers = 1, simDuration = 10) {
-    this.lcg = new LCG()
-    this.rules = rules
-
-    this.size = initialSize
-    this.capacity = capacity
-    this.servers = servers
+  constructor(queues: Queue[], firstEvent: Event, simDuration = 10) {
+    this.queues = queues
+    
     this.simDuration = simDuration
-
-    const firstLog: Log = {
-      action: Action.None,
-      queueSize: 0,
-      simTime: 0,
-      state: new Array(capacity + 1).fill(0),
-    }
-      
-    this.logs = [firstLog]
     this.currentTime = firstEvent.time
       
     this.events = new EventList()
@@ -43,95 +27,95 @@ export class QueueSimulator {
   }
 
   run(): void {
-    while (this.currentTime < this.simDuration) {
+    
+    // while (this.currentTime < this.simDuration) {
+    while (global < 100) {
       this.scheduler()
+      global++
     }
   }
 
-  getLastLog(): Log | undefined {
-    return _.cloneDeep(_.last(this.logs))
+  private arrivalScheduling = () => {
+    // const nextArrivalTime = this.lcg.next(this.rules.arrival.floor, this.rules.arrival.ceil)
+    // this.events.push(Action.Enqueue, this.currentTime, nextArrivalTime)
   }
 
-  private logTime = (interval: number): number[] => {
-    const lastestLog = _.last(this.logs)
-    if (!lastestLog) throw new Error('Logs are empty! Logs should be initialized with a None log. Check the constructor')
-
-    if (this.size > lastestLog.state.length) throw new Error('CRITICAL (!): Queue size is bigger than state length.')
-    const newState: number[] =  [...lastestLog.state]
-    const newTime = newState[this.size] + interval
-    newState[this.size] = newTime
-      
-    this.currentTime = newState.reduce((acc, state) => acc + state, 0) // Contabiliza o tempo
-
-    return newState
+  private serviceScheduling = () => {
+    // const nextServiceTime = this.lcg.next(this.rules.service.floor, this.rules.service.ceil)
+    // this.events.push(Action.Dequeue, this.currentTime, nextServiceTime)
   }
 
-  private arrivalSchedule = () => {
-    const nextArrivalTime = this.lcg.next(this.rules.arrival.floor, this.rules.arrival.ceil)
-    this.events.push(Action.Enqueue, this.currentTime, nextArrivalTime)
+  private enqueue(event: Event) {
+    const targetQueue: string = event.targetQueue
+    const interval: number = event.time
+
+    const queue = this.queues.find(el => el.id === targetQueue)
+    if (!queue) throw new Error('⚠️ CRITICAL ⚠️: Queue not found during enqueue.')
+
+    // const newState = this.logTime(time)
+
+
+    // const newLog: Log = {
+    //   action: Action.Enqueue,
+    //   queueSize: this.size,
+    //   simTime: this.currentTime,
+    //   state: newState,
+    // }
+
+
+    queue.logTime(this.currentTime, interval)
+
+    // newLog.queueSize++
+      
+    // if (this.size < this.capacity) {
+    //   this.size++
+    //   if (this.size <= this.servers) {
+    //     this.serviceSchedule()
+    //   }
+    // }
+      
+    // this.logs.push(newLog)
+
+    // this.arrivalSchedule()
   }
 
-  private serviceSchedule = () => {
-    const nextServiceTime = this.lcg.next(this.rules.service.floor, this.rules.service.ceil)
-    this.events.push(Action.Dequeue, this.currentTime, nextServiceTime)
-  }
-
-  private enqueue(time: number) {
-    const newState = this.logTime(time)
-
-    const newLog: Log = {
-      action: Action.Enqueue,
-      queueSize: this.size,
-      simTime: this.currentTime,
-      state: newState,
-    }
-    newLog.queueSize++
+  private dequeue(time: Event) {
+    // const newState = this.logTime(time)
       
-    if (this.size < this.capacity) {
-      this.size++
-      if (this.size <= this.servers) {
-        this.serviceSchedule()
-      }
-    }
+    // this.size--
       
-    this.logs.push(newLog)
+    // const newLog: Log = {
+    //   action: Action.Dequeue,
+    //   queueSize: this.size,
+    //   simTime: this.currentTime,
+    //   state: newState,
+    // }
+      
+    // if (this.size > 0) {
+    //   this.serviceSchedule()
+    // }
 
-    this.arrivalSchedule()
-  }
-
-  private dequeue(time: number) {
-    const newState = this.logTime(time)
-      
-    this.size--
-      
-    const newLog: Log = {
-      action: Action.Dequeue,
-      queueSize: this.size,
-      simTime: this.currentTime,
-      state: newState,
-    }
-      
-    if (this.size > 0) {
-      this.serviceSchedule()
-    }
-
-    this.logs.push(newLog)
+    // this.logs.push(newLog)
   }
 
   
   private scheduler = () => {
     const nextEvent = this.events.pop()
-      
-    if (nextEvent) {
-      switch (nextEvent.action) {
+    if (!nextEvent) return
+    // if (!nextEvent) throw new Error('⚠️ CRITICAL ⚠️: Envent list is empty.')
+
+    
+
+    switch (nextEvent.action) {
       case Action.Enqueue:
-        this.enqueue(nextEvent.time)
+        this.enqueue(nextEvent)
         break
 
       case Action.Dequeue:
-        this.dequeue(nextEvent.time)
+        this.dequeue(nextEvent)
         break
       }
-    }
   }
 }
+
+var global = 0
